@@ -1,3 +1,9 @@
+
+//==========RepaintRect Debug Function
+let repaintRects = [];
+//window.Repaint();
+
+
 var properties_big = {
     ParentName:  window.GetProperty("BIG:ParentName", "MainPanel"),
     lockOnNowPlaying: window.GetProperty("BIG:lockOnNowPlaying", true),
@@ -5038,6 +5044,22 @@ function on_paint(gr) {
             };
         };
     };
+    if (repaintRects.length) {
+        repaintRects.forEach((rect) =>
+            gr.DrawRect(rect.x, rect.y, rect.w, rect.h, 2, RGB(255, 0, 0))
+        );
+        repaintRects = [];
+    };
+};
+
+
+let repaintRectCount = 0;
+window.oldRepaintRect = window.RepaintRect;
+window.RepaintRect = (x, y, w, h, force = undefined) => {
+    //debugLog("RepaintRect called");
+    //debugLog(heartX);
+    repaintRects.push({ x, y, w, h });
+    window.Repaint();
 };
 
 function on_mouse_lbtn_down(x, y, m) {

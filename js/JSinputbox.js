@@ -412,7 +412,8 @@ oInputbox = function (w, h, default_text, empty_text, textcolor, backcolor, bord
     };
 
     this.on_key = function (vkey, mask, autovalidate) {   
-		autovalidate = typeof autovalidate !== 'undefined' ? autovalidate : this.autovalidation;	
+		autovalidate = typeof autovalidate !== 'undefined' ? autovalidate : this.autovalidation;
+        console.log(`oInputbox.on_key(${vkey}, ${mask}, ${autovalidate})`);
         if (mask == KMask.none) {
             switch (vkey) {
             case VK_SHIFT:
@@ -764,6 +765,7 @@ oInputbox = function (w, h, default_text, empty_text, textcolor, backcolor, bord
 				this.prev_text = this.text;
 			}
         }
+        console.log(`oInputBox.text: ${this.text}`)
     }
 
     this.on_char = function (code, mask, autovalidate) {

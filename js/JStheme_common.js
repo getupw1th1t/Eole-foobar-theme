@@ -3,7 +3,7 @@ var theme_name = "eole";
 var ProfilePath = fb.ProfilePath;
 var FoobarPath = fb.FoobarPath;
 
-var skin_global_path = ProfilePath + "themes\\"+theme_name;
+var skin_global_path = ProfilePath + "GeorgiaFork\\"+theme_name;
 var theme_img_path = skin_global_path + "\\img";
 var search_results_order = fb.TitleFormat("%album artist%|%date%|%album%|%discnumber%|%tracknumber%");
 var sort_by_default = "%album artist%|%date%|%album%|%discnumber%|%tracknumber%";
@@ -22,6 +22,10 @@ var last_mouse_move_notified = (new Date).getTime();
 var foo_playcount = utils.CheckComponent("foo_playcount", true);
 var timers = []
 var globalProperties = {
+	//===Debug===//
+	//logFns: window.GetProperty("PL_DEBUG logFns - spam console with function calls", false),
+	logFns_Misc: window.GetProperty("PL_DEBUG logFns_Misc", false),
+	drawDebugRects: window.GetProperty("PL_DEBUG draw object area rects", false),
 	theme_version: '1.2.3b18',
 	lastest_breaking_version: '1.2.3b15',
     thumbnailWidthMax: window.GetProperty("GLOBAL thumbnail width max", 200),
@@ -81,6 +85,29 @@ globalProperties.tf_order = fb.TitleFormat("%album artist%|%date%|%album%|%discn
 globalProperties.coverCacheWidthMax = Math.max(50,Math.min(2000,Number(globalProperties.coverCacheWidthMax)));
 if(isNaN(globalProperties.coverCacheWidthMax)) globalProperties.coverCacheWidthMax = 200;
 globalProperties.thumbnailWidthMax = Math.max(50,globalProperties.coverCacheWidthMax);
+
+//Debug Function Logging Settings
+globalProperties.logFns_oFileSystObject = window.GetProperty("PL_DEBUG logFns_oFileSystObject", false);
+globalProperties.logFns_oCursor = window.GetProperty("PL_DEBUG logFns_oCursor", false);
+globalProperties.logFns_RGB = window.GetProperty("PL_DEBUG logFns_RGB", false);
+globalProperties.logFns_oGenreCache = window.GetProperty("PL_DEBUG logFns_oGenreCache", false);
+globalProperties.logFns_var_cache = window.GetProperty("PL_DEBUG logFns_var_cache", false);
+globalProperties.logFns_oImageCache = window.GetProperty("PL_DEBUG logFns_oImageCache", false);
+globalProperties.logFns_oInputBox = window.GetProperty("PL_DEBUG logFns_oInputBox", false);
+globalProperties.logFns_oBrowser = window.GetProperty("PL_DEBUG logFns_oBrowser", false);
+globalProperties.logFns_oPanelSetting = window.GetProperty("PL_DEBUG logFns_oPanelSetting", false);
+globalProperties.logFns_PlaylistPanel = window.GetProperty("PL_DEBUG logFns_PlaylistPanel", false);
+globalProperties.logFns_oPlaylistHistory = window.GetProperty("PL_DEBUG logFns_oPlaylistHistory", false);
+globalProperties.logFns_Timers = window.GetProperty("PL_DEBUG logFns_Timers", false);
+globalProperties.logFns_oPlaylistManager = window.GetProperty("PL_DEBUG logFns_oPlaylistManager", false);
+globalProperties.logFns_oPlaylistItem = window.GetProperty("PL_DEBUG logFns_oPlaylistItem", false);
+globalProperties.logFns_oRow = window.GetProperty("PL_DEBUG logFns_oRow", false);
+globalProperties.logFns_oShowList = window.GetProperty("PL_DEBUG logFns_oShowList", false);
+globalProperties.logFns_oHeaderBar = window.GetProperty("PL_DEBUG logFns_oHeaderBar", false);
+globalProperties.logFns_settings_menu = window.GetProperty("PL_DEBUG logFns_settings_menu", false);
+globalProperties.logFns_Callbacks = window.GetProperty("PL_DEBUG logFns_Callbacks", false);
+
+
 function versionCompare(v1, v2, options) {
     var lexicographical = options && options.lexicographical,
         zeroExtend = options && options.zeroExtend,
@@ -110,6 +137,9 @@ function versionCompare(v1, v2, options) {
     return 0;
 }
 function setMemoryParameters(){
+	if (globalProperties.logFns_Misc) {
+		console.log("JSCommon: called setMemoryParameters ( )");
+	}
 	switch(true) {
 		case (globalProperties.mem_solicitation==0):
 			globalProperties.loaded_covers2memory = false;
@@ -135,6 +165,9 @@ function setMemoryParameters(){
 }
 setMemoryParameters();
 function setGlobalParameter(parameter_name, parameter_value, notify_others){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called setGlobalParameter (${parameter_name}, ${parameter_value}, ${notify_others})`);
+	}
 	var notify_others = typeof notify_others !== 'undefined' ? notify_others : false;	
 	window.SetProperty("GLOBAL "+parameter_name, parameter_value);
 	eval("globalProperties."+parameter_name+" = "+parameter_value);
@@ -180,6 +213,9 @@ var g_drop_effect = {
 };
 
 var oCursor = function () {
+	if (globalProperties.logFns_oCursor) {
+		//console.log("JSCommon: called oCursor ( )");
+	}
 	this.x = -10;
 	this.y = -10;
 	this.first_x = -10;
@@ -188,6 +224,10 @@ var oCursor = function () {
 	this.timer = false;
 	this.cursor = IDC_ARROW;
     this.onMouse = function (state, x, y, m) {
+		if (globalProperties.logFns_oCursor) {
+			//console.log(`JSCommon: called oCursor.onMouse (${state}, ${x}, ${y}, ${m})`);
+		}
+		//console.log(state, x, y);
 		switch(state){
 			case 'lbtn_down':
 				this.down_x = x;
@@ -258,12 +298,18 @@ function setFocusOnIndex(playlist_id,item_index){
 	plman.SetPlaylistFocusItem(playlist_id, item_index);
 }
 function SetPlaylistFocusItemByHandle(playlist_id,metadb){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called SetPlaylistFocusItemByHandle (${playlist_id}, ${metadb})`);
+	}
 	plman.ActivePlaylist = playlist_id;
 	plman.SetPlaylistFocusItem(playlist_id, metadb);
 }
 // HTML dialogs ---------------------------------------------------------------------
 function get_windows_version() {
-    let version = '';
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called get_windows_version ( )`);
+	}
+	let version = "";
 	var WshShell = new ActiveXObject("WScript.Shell");
     try {
         version = (WshShell.RegRead('HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\CurrentMajorVersionNumber')).toString();
@@ -291,6 +337,9 @@ function window_ok_callback(status, clicked) {
     window.Repaint();
 }
 function htmlCode(directory,filename) {
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called htmlCode (${directory}, ${filename})`);
+	}
     let htmlCode = utils.ReadTextFile(directory+"\\"+filename);
 
     let cssPath = directory;
@@ -304,6 +353,9 @@ function htmlCode(directory,filename) {
     return htmlCode;
 };
 function HtmlMsg(msg_title, msg_content, btn_label){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called HtmlMsg (${msg_title}, ${msg_content}, ${btn_label})`);
+	}
 	utils.ShowHtmlDialog(window.ID, htmlCode(skin_global_path+"\\html","MsgBox.html"), {
 		data: [msg_title, msg_content, btn_label, null],
 	});
@@ -325,6 +377,9 @@ function NoticeBox(msg_title, msg_content, btn_yes_label, btn_no_label, action){
 }
 
 function HtmlDialog(msg_title, msg_content, btn_yes_label, btn_no_label, confirm_callback){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called HtmlDialog (${msg_title}, ${msg_content}, ${btn_yes_label}, ${btn_no_label}, ${confirm_callback})`);
+	}
 	utils.ShowHtmlDialog(window.ID, htmlCode(skin_global_path+"\\html","ConfirmDialog.html"), {
 		data: [msg_title, msg_content, btn_yes_label, btn_no_label, confirm_callback],
 	});
@@ -410,7 +465,13 @@ function customFilterGrouping(title, top_msg, bottom_msg, input_default_values, 
 	});
 }
 function customGraphicBrowserGrouping(title, top_msg, bottom_msg, input_default_values, input_labels){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called customGraphicBrowserGrouping (${title}, ${top_msg}, ${bottom_msg}, ${input_default_values}, ${input_labels})`);
+	}
 	function ok_callback(status, input_values) {
+		if (globalProperties.logFns_Misc) {
+			console.log(`JSCommon: called ok_callback (${status}, ${input_values})`);
+		}
 		if(status!="cancel"){
 			var input_values = input_values.split('##');
 			if (!(input_values[0] == "" || typeof input_values[0] == 'undefined' || properties.TFgrouping==input_values[0]+" ^^ "+input_values[1])) {						
@@ -447,7 +508,13 @@ function customControlDetails(title, top_msg, bottom_msg, input_default_values, 
 	});
 }
 function customTracklistDetails(title, top_msg, bottom_msg, input_default_values, input_labels){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called customGraphicBrowserGrouping (${title}, ${top_msg}, ${bottom_msg}, ${input_default_values}, ${input_labels})`);
+	}
 	function ok_callback(status, input_values) {
+		if (globalProperties.logFns_Misc) {
+			console.log(`JSCommon: called ok_callback (${status}, ${input_values})`);
+		}
 		if(status!="cancel"){
 			var input_values = input_values.split('##');
 			if (!(typeof input_values[0] == 'undefined' || properties.show2linesCustomTag==input_values[0])) {
@@ -465,6 +532,9 @@ var colors = {};
 var darkcolors = {};
 
 function get_colors_global(){
+	if (globalProperties.logFns_RGB) {
+		console.log(`JSCommon: called get_colors_global ( )`);
+	}
 	darkcolors.normal_txt = GetGrey(240);
 	if(properties.darklayout || properties.stick2darklayout){
 		colors.normal_bg = GetGrey(30);
@@ -1171,6 +1241,9 @@ function Resizing(panelName, resizing_left,resizing_right, y_min, y_max) {
 }
 // Playlists ----------------------------------------------------------------
 function ExcludePlaylist(name){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called ExcludePlaylist (${name})`);
+	}
 	for (var i = 0; i < PlaylistExclude.length; i++) {
 		if(PlaylistExclude[i]==name) return true;
 	}
@@ -1359,6 +1432,9 @@ function enableDiskCacheGlobally(){
 	else  HtmlMsg("Explanation on the disk image cache", "Warning: foobar may be slower without the disk image cache enabled.\n\nRestart foobar to fully disable it.", "Ok");
 }
 function enableCoversAtStartupGlobally(){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called enableCoversAtStartupGlobally ( )`);
+	}
 	globalProperties.load_covers_at_startup = !globalProperties.load_covers_at_startup;
 	window.SetProperty("COVER Load all at startup", globalProperties.load_covers_at_startup);
 	window.NotifyOthers("LoadAllCoversState",globalProperties.load_covers_at_startup);
@@ -1667,16 +1743,25 @@ function RGB2HSL(RGB_colour) {
 };
 
 oGenreCache = function () {
+	if (globalProperties.logFns_oGenreCache) {
+		console.log("JSCommon: called oGenreCache ( )");
+	}
     this.genreList = Array();
 	this.tf_genre = globalProperties.tf_genre;
     this.initialized = false;
     this.genreExist = function (genre) {
+		if (globalProperties.logFns_oGenreCache) {
+			console.log(`JSCommon: called oGenreCache.genreExist (${genre})`);
+		}
 		for (var i = 0; i < this.genreList.length; i++) {
 			if(this.genreList[i][0]==genre) return true;
 		}
 		return false;
     };
     this.add = function (genre) {
+		if (globalProperties.logFns_oGenreCache) {
+			console.log(`JSCommon: called oGenreCache.add (${genre})`);
+		}
 		//genre = genre.replace("&","&&");
 		if(!this.genreExist(genre)) {
 			this.genreList[this.genreList.length] = Array(genre,"0");
@@ -1685,12 +1770,18 @@ oGenreCache = function () {
 		return false;
     };
 	this.onFinish = function (genre) {
+		if (globalProperties.logFns_oGenreCache) {
+			console.log(`JSCommon: called oGenreCache.onFinish (${genre})`);
+		}
 		this.sort();
 		this.setHierarchy();
 		this.initialized = true;
 		window.NotifyOthers("hereIsGenreList",JSON_stringify(g_genre_cache));
 	}
 	this.setHierarchy = function () {
+		if (globalProperties.logFns_oGenreCache) {
+			console.log("JSCommon: called oGenreCache.setHierarchy ( )");
+		}
 		var submenu=false;
 		for (var i = 0; i < this.genreList.length; i++) {
 			if(this.genreList[i][0].charAt(1)==".") {
@@ -1701,17 +1792,29 @@ oGenreCache = function () {
 		}
 	}
 	this.sort = function (genre) {
+		if (globalProperties.logFns_oGenreCache) {
+			console.log(`JSCommon: called oGenreCache.sort (${genre})`);
+		}
 		this.genreList.sort(sortNumber);
 	}
 	this.isEmpty = function () {
+		if (globalProperties.logFns_oGenreCache) {
+			console.log(`JSCommon: called oGenreCache.isEmpty ( )`);
+		}
 		return (this.genreList.length == 0);
 	}
     this.trace = function (genre) {
+		if (globalProperties.logFns_oGenreCache) {
+			console.log(`JSCommon: called oGenreCache.trace (${genre})`);
+		}
 		for (var i = 0; i < this.genreList.length; i++) {
 			console.log(this.genreList[i][0]+","+this.genreList[i][1])
 		}
     };
     this.on_metadb_changed = function (metadbs, fromhook) {
+		if (globalProperties.logFns_oGenreCache) {
+			console.log(`JSCommon: called oGenreCache.on_metadb_changed (${metadbs}, ${fromhook})`);
+		}
 		if(fromhook) return;
 		var previous = "123456789";
 		var total = metadbs.Count;
@@ -1728,6 +1831,9 @@ oGenreCache = function () {
 		if(genre_added) this.onFinish();
     };
 	this.build_from_library = function () {
+		if (globalProperties.logFns_oGenreCache) {
+			console.log("JSCommon: called oGenreCache.build_from_library ( )");
+		}
 		var libraryList = fb.GetLibraryItems();
 		libraryList.OrderByFormat(globalProperties.tf_genre, 1);
 		var i = 0;
@@ -1747,23 +1853,41 @@ oGenreCache = function () {
 	}
 }
 var_cache = function(){
+	if (globalProperties.logFns_var_cache) {
+		console.log("JSCommon: called var_cache ( )");
+	}
 	this.vars = {};
 	this.set = function(name,value){
+		if (globalProperties.logFns_var_cache) {
+			console.log(`JSCommon: called var_cache.set (${name}, ${value})`);
+		}
 		this.vars[name] = value;
 	};
 	this.get = function(name){
+		if (globalProperties.logFns_var_cache) {
+			console.log(`JSCommon: called var_cache.get (${name}`);
+		}
 		return this.vars[name];
 	};
 	this.setOnce = function(name,value){
+		if (globalProperties.logFns_var_cache) {
+			console.log(`JSCommon: called var_cache.setOnce (${name}, ${value})`);
+		}
 		if(!this.isdefined(name)) this.vars[name] = value;
 	};
 	this.isdefined = function(name){
 		return (typeof this.vars[name] != 'undefined' &&  this.vars[name]!=null);
 	}
 	this.reset = function(name){
+		if (globalProperties.logFns_var_cache) {
+			console.log(`JSCommon: called var_cache.reset (${name}`);
+		}
 		delete this.vars[name];
 	}
 	this.resetAll = function(){
+		if (globalProperties.logFns_var_cache) {
+			console.log("JSCommon: called var_cache.resetAll ( )");
+		}
 		this.vars = {};
 	}
 }
@@ -1816,11 +1940,17 @@ function cloneObject(obj) {
     return clone;
 }
 function sortNumber(a,b) {
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called sortNumber (${a}, ${b})`);
+	}
     if(a[0] < b[0]) return -1;
     if(a[0] > b[0]) return 1;
     return 0;
 }
 function createGenrePopupMenu(firstFile, checked_item, genrePopupMenu){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called createGenrePopupMenu (${firstFile}, ${checked_item}, ${genrePopupMenu})`);
+	}
 	var checked_item = typeof checked_item !== 'undefined' ? checked_item : -1;
 	var genrePopupMenu = typeof genrePopupMenu !== 'undefined' ? genrePopupMenu : window.CreatePopupMenu();
 	if(checked_item >= 1000 && checked_item < 2001) var checked_name=g_genre_cache.genreList[checked_item-1000][0];
@@ -1988,6 +2118,9 @@ function rateSong(new_rating, old_rating, metadb){
 	};
 }
 function SetGenre(GenreNumber, plist_items, max_items, clean_file){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called SetGenre (${GenreNumber}, ${plist_items}, ${max_items}, ${clean_file})`);
+	}
 	var max_items = typeof max_items !== 'undefined' ? max_items : 9000;
 	var clean_file = typeof clean_file !== 'undefined' ? clean_file : false;
     if(plist_items.Count>max_items) {
@@ -2036,18 +2169,30 @@ function removeItems(plist_items, plist_Idx, ask_for_confirmation){
 	return false;
 }
 String.prototype.sanitise = function() {
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called String.prototype.sanitise ( )`);
+	}
     return this.replace(/[\/\\|:]/g, "-").replace(/\*/g, "x").replace(/"/g, "''").replace(/[<>]/g, "_").replace(/\?/g, "").replace(/^\./, "_").replace(/\.+$/, "").replace(/^\s+|[\n\s]+$/g, "");
 }
 String.prototype.extract_year = function() {
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called String.prototype.extract_year ( )`);
+	}
 	var year = this.match(/[0-9]{4}/);
 	if(year) return year[0];
 	return this;
 }
 function trim1(str) {
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called trim1 (${str})`);
+	}
     return str.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 }
 
 function apply_playlist(itemsList, play_results, order_list, undobackup){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called apply_playlist (${itemsList}, ${play_results}, ${order_list}, ${undobackup})`);
+	}
 	var undobackup = typeof undobackup !== 'undefined' ? undobackup : true;
 	var pl_idx=-1;playlist_2remove=-1;
 	for (i=0; i < plman.PlaylistCount; i++) {
@@ -2072,6 +2217,9 @@ function apply_playlist(itemsList, play_results, order_list, undobackup){
     if(play_results) plman.ExecutePlaylistDefaultAction(pl_idx,0);
 }
 function match(input, str){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called match (${input}, ${str})`);
+	}
     input = input.removeAccents().toLowerCase();
     for(var i in str){
         if(input.indexOf(str[i]) < 0)
@@ -2081,6 +2229,9 @@ function match(input, str){
 }
 
 function process_string(str){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called process_string (${str})`);
+	}
     var str_ = [];
     var str = str.removeAccents().toLowerCase();
     var str = str.split(" ").sort();
@@ -2356,6 +2507,9 @@ function arrayContains(array,name){
 	return false;
 }
 function delete_tags_except(track_metadb,except_array){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called delete_tags_except (${track_metadb}, ${except_array})`);
+	}
 	var track_FileInfo = track_metadb.GetFileInfo();
 
 	for (var i = 0; i <= track_FileInfo.MetaCount; i++) {
@@ -2394,6 +2548,9 @@ function TagstoRemoveSimple(track_metadb,toKeepArray,toRemoveArray){
 //=================================================// General declarations
 
 function GetKeyboardMask() {
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called GetKeyboardMask ( )`);
+	}
     var c = utils.IsKeyPressed(VK_CONTROL) ? true : false;
     var a = utils.IsKeyPressed(VK_ALT) ? true : false;
     var s = utils.IsKeyPressed(VK_SHIFT) ? true : false;
@@ -2426,31 +2583,26 @@ function StringFormat() {
         return 0;
     };
     return ((h_align << 28) | (v_align << 24) | (trimming << 20) | flags);
-};
+}
 
-
-// Used everywhere!
-function RGB(r, g, b) {
-    return (0xff000000 | (r << 16) | (g << 8) | (b));
-};
-function RGBA(r, g, b, a) {
-    return ((a << 24) | (r << 16) | (g << 8) | (b));
-};
 function getAlpha(color) {
     return ((color >> 24) & 0xff);
-};
+}
 
 function getRed(color) {
     return ((color >> 16) & 0xff);
-};
+}
 
 function getGreen(color) {
     return ((color >> 8) & 0xff);
-};
+}
 
 function getBlue(color) {
     return (color & 0xff);
-};
+}
+
+function RGB(r, g, b) {return (0xff000000 | (r << 16) | (g << 8) | (b));}
+function RGBA(r, g, b, a) {return ((a << 24) | (r << 16) | (g << 8) | (b));}
 function setAlpha(color, alpha) {
 	colorRGB = toRGB(color);
     return RGBA(colorRGB[0], colorRGB[1], colorRGB[2],alpha);
@@ -2485,6 +2637,9 @@ function return_colors_from_string(string) {
     return RGB(arr[0], arr[1], arr[2]);
 };
 function TrackType(metadb) {
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called TrackType (${metadb})`);
+	}
     var taggable;
     var type;
 	var trackpath = metadb.RawPath.substring(0, 4);
@@ -2661,6 +2816,9 @@ function DrawPolyStar(gr, x, y, out_radius, in_radius, points, line_thickness, l
 };
 
 function zoom(value, factor) {
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called zoom (${value}, ${factor})`);
+	}
     return Math.ceil(value * factor / 100);
 };
 Number.prototype.toHHMMSS = function () {
@@ -2900,6 +3058,9 @@ function get_font() {
 
 // ========================================= IMAGES =========================================
 function FormatCover(image, w, h, rawBitmap, callID, keepratio) {
+	if (globalProperties.logFns_oImageCache) {
+		console.log(`JSCommon: called FormatCover (${image}, ${w}, ${h}, ${rawBitmap}, ${callID}, ${keepratio})`);
+	}
 	var keepratio = typeof keepratio !== 'undefined' ? keepratio : false;		
 	if(!image || w<=0 || h<=0) return image;
 	if(rawBitmap) {
@@ -2920,6 +3081,9 @@ function FormatCover(image, w, h, rawBitmap, callID, keepratio) {
 	}
 };
 function isImage(variable){
+	if (globalProperties.logFns_oImageCache) {
+		console.log(`JSCommon: called isImage (${variable})`);
+	}
 	return (typeof variable == 'object' && variable!=null)
 }
 function isValidHandle(variable){
@@ -2930,6 +3094,9 @@ function isValidHandle(variable){
 	}
 }
 function process_cachekey(metadb, titleformat, str){
+	if (globalProperties.logFns_oImageCache) {
+		console.log(`JSCommon: called process_cachekey (${metadb}, ${titleformat}, ${str})`);
+	}
 	var titleformat = typeof titleformat !== 'undefined' ? titleformat : globalProperties.tf_crc;
 	try{
 		var str = typeof str !== 'undefined' ? str : titleformat.EvalWithMetadb(metadb);
@@ -2948,6 +3115,9 @@ function process_cachekey(metadb, titleformat, str){
     return str;
 };
 function check_cache(metadb, albumIndex, crc){
+	if (globalProperties.logFns_oImageCache) {
+		console.log(`JSCommon: called check_cache (${metadb}, ${albumIndex}, ${crc})`);
+	}
 	var crc = typeof crc !== 'undefined' ? crc : brw.groups[albumIndex].cachekey;
 	var filename = cover_img_cache+"\\"+crc+"."+globalProperties.ImageCacheExt;
 	if(crc=="undefined") return false;
@@ -2957,6 +3127,9 @@ function check_cache(metadb, albumIndex, crc){
     return false;
 };
 function delete_file_cache(metadb, albumIndex, crc, delete_at_startup){
+	if (globalProperties.logFns_oImageCache) {
+		console.log(`JSCommon: called delete_file_cache (${metadb}, ${albumIndex}, ${crc}, ${delete_at_startup})`);
+	}
 	var crc = typeof crc !== 'undefined' ? crc : brw.groups[albumIndex].cachekey;
 	var filename = cover_img_cache+"\\"+crc+"."+globalProperties.ImageCacheExt;
     if(g_files.FileExists(filename)) {
@@ -2984,6 +3157,9 @@ function delete_file_cache(metadb, albumIndex, crc, delete_at_startup){
 };
 
 function delete_full_cache(){
+	if (globalProperties.logFns_oImageCache) {
+		console.log(`JSCommon: called delete_full_cache ( )`);
+	}
 	if(globalProperties.deleteDiskCache) {
 		g_files.DeleteFolder(cover_img_cache,true);
 		timer_create_folder = setTimeout(function(){
@@ -3006,6 +3182,9 @@ function delete_full_cache(){
 	}
 }
 function load_image_from_cache(filename){
+	if (globalProperties.logFns_oImageCache) {
+		console.log(`JSCommon: called load_image_from_cache (${filename})`);
+	}
 	try{
         var tdi = gdi.LoadImageAsync(window.ID, filename);
         return tdi;
@@ -3014,6 +3193,9 @@ function load_image_from_cache(filename){
 	}
 };
 function load_image_from_cache_direct(filename){
+	if (globalProperties.logFns_oImageCache) {
+		console.log(`JSCommon: called load_image_from_cache_direct (${filename})`);
+	}
 	try{
         var img = gdi.Image(filename);
         return img;
@@ -3039,6 +3221,9 @@ function get_albumArt(metadb,cachekey){
 	return artwork_img;
 }
 function get_fallbackCover(metadb, tracktype){
+	if (globalProperties.logFns_oImageCache) {
+		console.log(`JSCommon: called get_fallbackCover (${metadb}, ${tracktype})`);
+	}
 	var tracktype = typeof tracktype !== 'undefined' ? tracktype : TrackType(metadb);
 	if(tracktype < 2) {
 		return globalProperties.nocover_img;
@@ -3132,6 +3317,9 @@ function save_image_to_cache(image, albumIndex, cachekey, metadb){
 	//return image;
 }
 function createDragText(line1, line2, cover_size){
+	if (globalProperties.logFns_oImageCache) {
+		console.log(`JSCommon: called createDragText (${line1}, ${line2}, ${cover_size})`);
+	}
 	var drag_img = gdi.CreateImage(cover_size, cover_size);
 
     var gb = drag_img.GetGraphics();
@@ -3155,6 +3343,9 @@ function createDragText(line1, line2, cover_size){
 	return drag_img;
 };
 function createDragImg(img, cover_size, count){
+	if (globalProperties.logFns_oImageCache) {
+		console.log(`JSCommon: called createDragImg (${img}, ${cover_size}, ${count})`);
+	}
 	var drag_zone_size = 220;
 	var drag_img = gdi.CreateImage(drag_zone_size, drag_zone_size);
 	var left_padding = top_padding = Math.round((drag_zone_size - cover_size)/2);
@@ -3184,10 +3375,16 @@ function freeCacheMemory(force){
 	return false;
 }
 oImageCache = function () {
+	if (globalProperties.logFns_oImageCache) {
+		console.log("JSCommon: called oImageCache");
+	}
     this.cachelist = Array();
 	this.loadCounter = 0;
 	this.coverCacheWidthMax = -1;
     this.addToCache = function (image, cachekey, resize_width, resize_height) {
+		if (globalProperties.logFns_oImageCache) {
+			console.log(`JSCommon: called oImageCache.addToCache (${image}, ${cachekey}, ${resize_width}, ${resize_height})`);
+		}
 		if(!globalProperties.loaded_covers2memory || freeCacheMemory()) return;
 		var resize_height = typeof resize_height !== 'undefined' ? resize_height : resize_width;
 		if(cachekey!="undefined") {
@@ -3199,6 +3396,9 @@ oImageCache = function () {
 		this.coverCacheWidthMax = maxWidth;
 	}
     this.resetCache = function () {
+		if (globalProperties.logFns_oImageCache) {
+			console.log("JSCommon: called oImageCache.resetCache ( )");
+		}
 		debugger_hint("-------------- image cache reset --------------");
 		debugger_hint(window.TotalMemoryUsage+" > TotalMemoryUsage");
 		debugger_hint(window.MemoryLimit+" > MemoryLimit");
@@ -3313,12 +3513,21 @@ oImageCache = function () {
         return img;
     };
     this.reset = function(key) {
+		if (globalProperties.logFns_oImageCache) {
+			console.log(`JSCommon: called oImageCache.reset (${key})`);
+		}
         this.cachelist[key] = null;
     };
     this.resetMetadb = function(metadb) {
+		if (globalProperties.logFns_oImageCache) {
+			console.log(`JSCommon: called oImageCache.resetMetadb (${metadb})`);
+		}
         this.cachelist[process_cachekey(metadb)] = null;
     };
 	this.resetAll = function(){
+		if (globalProperties.logFns_oImageCache) {
+			console.log("JSCommon: called oImageCache.resetAll ( )");
+		}
 		this.cachelist = Array();
 	};
     this.getit = function (metadb, albumId, image, cw) {
@@ -3596,6 +3805,9 @@ function openCoverFullscreen(metadb){
 }
 // Debugger functions
 function debugger_hint(string){
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called debugger_hint (${string})`);
+	}
 	//console.log(string)	;
 }
 //JSON wrappers
@@ -3609,6 +3821,9 @@ function JSON_parse(info) {
 	return JSON.parse(info);
 }
 function JSON_stringify(info) {
+	if (globalProperties.logFns_Misc) {
+		console.log(`JSCommon: called JSON_stringify (${info})`);
+	}
 	try {
 	   return JSON.stringify(info);
 	} catch (e) {
